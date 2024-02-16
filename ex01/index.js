@@ -7,24 +7,19 @@ app.get("/", (req, res) => {
   res.json({ ok: true, data: "Hello world" });
 });
 
-app.get("/:lang", (req, res) => {
-  const lang = req.params.lang.toLowerCase();
-  let msg = "Hello World";
+app.get("/:lang?", (req, res) => {
+  const lang = req.params.lang;
 
-  switch (lang) {
-    case "nl":
-      msg = "Hallo Wereld";
+  switch (lang.toUpperCase()) {
+    case "NL":
+      res.json({ ok: true, data: "Hallo Wereld" });
       break;
-    case "it":
-      msg = "Ciao Mondo";
+    case "IT":
+      res.json({ ok: true, data: "Ciao Mondo" });
       break;
     default:
-      break;
+      res.json({ ok: true, data: "Hello World" });
   }
-
-  res.json({ ok: true, data: msg });
 });
 
-app.listen(port, () => {
-  console.log(`Server is listening at http://localhost:${port}`);
-});
+app.listen(port, () => {});
