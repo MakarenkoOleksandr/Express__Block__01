@@ -4,32 +4,59 @@ const app = express();
 const port = 4040;
 
 const languageMsgs = {
-  en: "Hello World",
-  nl: "Hallo Wereld",
-  it: "Ciao Mondo",
+  EN: "Hello world!",
+  NL: "Hallo Wereld",
+  IT: "Ciao Mondo",
 };
 
 app.get("/", (req, res) => {
-  res.json({ ok: true, data: "Hello World!" });
+  res.json({ ok: true, data: "Hello world" });
 });
 
-app.get("/:lang", (req, res) => {
-  const lang = req.params.lang.toLowerCase();
-  if (languageMsgs[lang]) {
-    res.json({ ok: true, data: languageMsgs[lang] });
+app.get("/:lang?/:message?", (req, res) => {
+  const lang = req.params.lang;
+  const message = req.params.message;
+
+  if (message) {
+    if (message === "remove") {
+      delete languageMsgs[lang];
+      return res.json({ ok: true, data: `${lang} removed` });
+    } else if (languageMsgs[lang]) {
+      return res.json({
+        ok: true,
+        data: `Action forbidden, ${lang} is already present in the system`,
+      });
+    } else {
+      languageMsgs[lang] = message;
+      return res.json({
+        ok: true,
+        data: `${lang} added with message ${message}`,
+      });
+    }
+  } else if (languageMsgs[lang]) {
+    return res.json({ ok: true, data: languageMsgs[lang] });
   }
-  res.json({ ok: true, data: `Hello World in ${lang} not found` });
+
+  return res.json({
+    ok: true,
+    data: `Hello World in ${lang} not found`,
+  });
 });
 
-app.get("/:lang/:message", (req, res) => {
-  const lang = req.params.lang.toLowerCase();
-  const msg = decodeURIComponent(req.params.message);
+app.get("/:lang/update/:message", (req, res) => {
+  const lang = req.params.lang;
+  const message = req.params.message;
 
-  languageMsgs[lang] = msg;
+  if (languageMsgs[lang]) {
+    const previousMessage = languageMsgs[lang];
+    languageMsgs[lang] = message;
+    return res.json({
+      ok: true,
+      data: `${lang} updated from '${previousMessage}' to '${message}'`,
+    });
+  }
 
-  res.json({ ok: true, data: `${lang} added with message ${msg}` });
+  return res.json({ ok: true, data: `Hello World in ${lang} not found` });
 });
 
-app.listen(port, () => {
-  console.log(`Server is listening at http://localhost:${port}`);
-});
+app.listen(port, () => {});
