@@ -3,33 +3,82 @@ const app = express();
 
 const port = 4040;
 
-const languageMsgs = {
-  en: "Hello World",
-  nl: "Hallo Wereld",
-  it: "Ciao Mondo",
-};
+const accounts = {};
 
-app.get("/", (req, res) => {
-  res.json({ ok: true, data: "Hello World!" });
-});
+app.use("/account/new/:accountID/:amount", (req, res) => {
+  const accountID = req.params.accountID;
+  const amount = parseFloat(req.params.amount);
 
-app.get("/:lang", (req, res) => {
-  const lang = req.params.lang.toLowerCase();
-  if (languageMsgs[lang]) {
-    res.json({ ok: true, data: languageMsgs[lang] });
+  if (accounts[accountID]) {
+    res.json({ ok: true, data: `Account ${accountID} already exists` });
   }
-  res.json({ ok: true, data: `Hello World in ${lang} not found` });
+
+  accounts[accountID] = amount;
+
+  res.json({
+    ok: true,
+    data: `Account ${accountID} created with ${amount} euros`,
+  });
 });
 
-app.get("/:lang/:message", (req, res) => {
-  const lang = req.params.lang.toLowerCase();
-  const msg = decodeURIComponent(req.params.message);
+app.use("/:accountID/balance", (req, res) => {
+  const accountID = req.params.accountID;
+  const balance = accounts[accountID];
 
-  languageMsgs[lang] = msg;
+  if (isNaN(balance)) res.json({ ok: true, data: "Account not found" });
 
-  res.json({ ok: true, data: `${lang} added with message ${msg}` });
+  res.json({
+    ok: true,
+    data: balance,
+  });
 });
 
-app.listen(port, () => {
-  console.log(`Server is listening at http://localhost:${port}`);
+app.use("/:accountID/withdraw/:amount", (req, res) => {
+  const accountID = req.params.accountID;
+  const amount = parseFloat(req.params.amount);
+  const balance = accounts[accountID];
+
+  if (isNaN(balance)) res.json({ ok: true, data: "Account not found" });
+  if (balance < amount) res.json({ ok: true, data: "Insufficient funds" });
+
+  accounts[accountID] -= amount;
+
+  res.json({
+    ok: true,
+    data: `${amount} euros taken from account num ${accountID}`,
+  });
 });
+
+app.use("/:accountID/deposit/:amount", (req, res) => {
+  const accountID = req.params.accountID;
+  const amount = parseFloat(req.params.amount);
+  const balance = accounts[accountID];
+
+  if (isNaN(balance)) {
+    res.json({ ok: true, data: "Account not found" });
+  }
+
+  accounts[accountID] += amount;
+
+  res.json({
+    ok: true,
+    data: `${amount} euros added to account num ${accountID}`,
+  });
+});
+
+app.use("/:accountID/delete", (req, res) => {
+  const accountID = req.params.accountID;
+
+  delete accounts[accountID];
+
+  res.json({
+    ok: true,
+    data: `Account num ${accountID} deleted`,
+  });
+});
+
+app.use("/*", (req, res) => {
+  res.json({ ok: true, data: "404 resource not found" });
+});
+
+app.listen(port, () => {});

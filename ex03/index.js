@@ -9,11 +9,11 @@ const languageMsgs = {
   IT: "Ciao Mondo",
 };
 
-app.get("/", (req, res) => {
+app.use("/", (req, res) => {
   res.json({ ok: true, data: "Hello world" });
 });
 
-app.get("/:lang?/:message?", (req, res) => {
+app.use("/:lang/:message", (req, res) => {
   const lang = req.params.lang;
   const message = req.params.message;
 

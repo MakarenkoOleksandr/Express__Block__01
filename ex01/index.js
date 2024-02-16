@@ -3,11 +3,11 @@ const app = express();
 
 const port = 4040;
 
-app.get("/", (req, res) => {
+app.use("/", (req, res) => {
   res.json({ ok: true, data: "Hello world" });
 });
 
-app.get("/:lang?", (req, res) => {
+app.use("/:lang", (req, res) => {
   const lang = req.params.lang;
 
   switch (lang.toUpperCase()) {
